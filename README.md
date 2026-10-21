@@ -17,7 +17,7 @@ the keyboard, the mouse, or your **phone as a remote**.
 
 - **Launch TV:** starts (or reuses) your Android TV AVD, waits for Android to boot, and goes fullscreen.
   - The fullscreen is **verified on screen** (pixels and window z-order), not just assumed from a window size.
-  - The TV bezel/device frame is removed; your AVD is never modified.
+  - Choose **edge to edge** (no frame) or **with the TV frame (bezel)**: Display → *Show the TV frame*. With the frame, the whole framed TV is fitted on the screen with black around it, like a TV on a wall. Your AVD is never modified.
 - **Any monitor:**
   - Auto (primary monitor) or a monitor you pick: 1080p, 1440p, 4K, any DPI scaling.
   - It follows monitor plug/unplug and resolution changes.
@@ -138,7 +138,7 @@ While **Netflix (PC)** is in front, the remote controls Netflix in Edge:
 |---|---|
 | Screen stuck on the TV | **Ctrl + Left Alt + Q**. Or Start Menu → *Restore desktop (emergency)*, or run `Restore-Desktop.bat` |
 | "window did not appear within 240 s" | The emulator didn't start, often from low RAM. Close other apps; check that the AVD boots from Android Studio |
-| TV shows a bezel | The emulator was started from Android Studio. Close it and use **Launch TV** |
+| TV shows a frame/bezel you don't want (or no frame when you want one) | Display → **Show the TV frame (bezel)**, then **Restart emulator to apply**. The frame needs an AVD with *Enable device frame* on |
 | Phone can't open the remote | Same Wi-Fi? Remote enabled? Firewall allowed? Some public or hotel Wi-Fi blocks devices from seeing each other |
 | No network inside Android | **System → Check network** (Windows online → Android internet → DNS → clock) |
 

@@ -130,7 +130,8 @@ In Android Studio:
 5. **Install more apps:** on the TV, open **Apps → Search for apps** (Play Store). YouTube, Prime Video,
    Crunchyroll, JioHotstar, Spotify and others work. **Netflix** isn't available for emulators, so use the
    **Netflix (PC)** button instead.
-6. **Always ready** (optional): **System → When I sign in to Windows → Start in the background**. The phone remote
+6. **TV frame** (optional): **Display → Show the TV frame (bezel)** → **Restart emulator to apply** gives a black TV frame around the picture instead of edge to edge.
+7. **Always ready** (optional): **System → When I sign in to Windows → Start in the background**. The phone remote
    is then ready whenever the PC is on.
 
 ---

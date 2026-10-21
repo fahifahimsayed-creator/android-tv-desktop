@@ -83,6 +83,16 @@ static class UnitTests
         }
         var (x, y, w, h) = Geometry.ToDips(new RECT(0, 0, 1920, 1080), 1.25);
         Check("125% scaling: 1920x1080 px = 1536x864 DIPs", w == 1536 && h == 864 && x == 0 && y == 0, $"{w}x{h}");
+        // TV frame (bezel) mode: model measured with the tv_4k skin (window 1798x1080, framed TV at (60,36)-(1730,1010))
+        var framed = new ContentModel(60 / 1798.0, 36 / 1080.0, 1730 / 1798.0, 1010 / 1080.0);
+        foreach (var (fname, fm) in new[] { ("1920x1080", new RECT(0, 0, 1920, 1080)), ("2560x1440 at x=1920", new RECT(1920, 0, 4480, 1440)) })
+        {
+            var fw = Geometry.FitInside(fm, framed, 1798.0 / 1080.0, 0, 1.0);
+            var tv = framed.Painted(fw);
+            Check($"frame mode: whole framed TV fits inside {fname}", fm.Contains(new RECT(tv.Left + 1, tv.Top + 1, tv.Right - 1, tv.Bottom - 1)), $"window={fw} tv={tv}");
+            Check($"frame mode: TV is as large as possible on {fname} (touches two edges)", (Math.Abs(tv.Top - fm.Top) <= 2 && Math.Abs(tv.Bottom - fm.Bottom) <= 2) || (Math.Abs(tv.Left - fm.Left) <= 2 && Math.Abs(tv.Right - fm.Right) <= 2), tv.ToString());
+            Check($"frame mode: TV centred on {fname}", Math.Abs((tv.Left - fm.Left) - (fm.Right - tv.Right)) <= 2 && Math.Abs((tv.Top - fm.Top) - (fm.Bottom - tv.Bottom)) <= 2, tv.ToString());
+        }
         var (x2, _, w2, h2) = Geometry.ToDips(new RECT(1920, 0, 4480, 1440), 1.0);
         Check("100% scaling: 2560x1440 px = 2560x1440 DIPs", w2 == 2560 && h2 == 1440 && x2 == 1920);
         bool ok = ContentModel.TryFrom(new RECT(0, 0, 1920, 1080), new RECT(60, 39, 1858, 1080), out var m);

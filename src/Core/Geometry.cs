@@ -55,6 +55,21 @@ namespace AndroidTVDesktop.Core
             return new RECT(ix, iy, ix + (int)Math.Ceiling(w), iy + (int)Math.Ceiling(h));
         }
 
+        /// <summary>
+        /// TV-frame mode: the largest window (keeping the emulator's aspect ratio, which Qt enforces when a device frame is
+        /// shown) whose painted TV - frame included - fits INSIDE the monitor, centred. The rest is black letterbox.
+        /// </summary>
+        public static RECT FitInside(RECT monitor, ContentModel m, double aspect, int margin, double scale)
+        {
+            double cw = m.C - m.A, ch = m.D - m.B;
+            double w = Math.Min((monitor.Width - 2.0 * margin) / cw, (monitor.Height - 2.0 * margin) * aspect / ch) * scale;
+            double h = w / aspect;
+            double x = monitor.Left + (monitor.Width - cw * w) / 2.0 - m.A * w;
+            double y = monitor.Top + (monitor.Height - ch * h) / 2.0 - m.B * h;
+            int ix = (int)Math.Round(x), iy = (int)Math.Round(y);
+            return new RECT(ix, iy, ix + (int)Math.Floor(w), iy + (int)Math.Floor(h));
+        }
+
         /// <summary>Monitor rect expressed in window-relative coordinates (for SetWindowRgn).</summary>
         public static RECT ClipFor(RECT monitor, RECT window) =>
             new RECT(monitor.Left - window.Left, monitor.Top - window.Top, monitor.Right - window.Left, monitor.Bottom - window.Top);

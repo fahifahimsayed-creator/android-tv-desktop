@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 — 2026-10-21
+
+- **TV frame (bezel) option:** Display → *Show the TV frame (bezel)*. The emulator starts with the AVD's own TV frame, and fullscreen fits the whole framed TV on the screen, centred with black around it. The emulator enforces the frame's shape, so the app fits it instead of overscanning, and keeps the frame's own mask. A *Restart emulator to apply* button appears when the running emulator doesn't match the setting yet. Live-tested: framed TV 1792×1080 fitted on a 1920×1080 screen.
+- 6 new unit tests for the frame fit on 1080p and 1440p (158 total).
+
 ## 1.0.1 — 2026-10-21
 
 - **Beginner setup guide** [docs/SETUP.md](docs/SETUP.md): from zero to Google TV. It covers installing Android Studio (winget or website), turning on hardware acceleration, creating the **Google TV 4K** emulator (Television (4K), Google TV API 36 x86_64), the first start and Google sign-in, installing the app, and fixes for common setup problems.

@@ -263,6 +263,31 @@ namespace AndroidTVDesktop.Core
             Raise();
         }
 
+        bool frameMode;
+
+        /// <summary>True when the running emulator shows the AVD's device frame: started without "-skin" and the AVD has showDeviceFrame=yes.</summary>
+        bool IsFrameMode()
+        {
+            if (!Avd.ShowDeviceFrame) return false;
+            try
+            {
+                var p = EmulatorProcesses.ForAvd(s.AvdName).FirstOrDefault(x => x.Pid == TargetPid);
+                if (p != null) return p.CommandLine.IndexOf("-skin", StringComparison.OrdinalIgnoreCase) < 0;
+            }
+            catch { }
+            return !s.LaunchFrameless;
+        }
+
+        /// <summary>Whether the running emulator matches the "show TV frame" setting (false = restart needed to apply it).</summary>
+        public bool FrameSettingApplied()
+        {
+            if (Target == IntPtr.Zero || !Avd.ShowDeviceFrame) return true;
+            var p = EmulatorProcesses.ForAvd(s.AvdName).FirstOrDefault(x => x.Pid == TargetPid);
+            if (p == null) return true;
+            bool runningWithFrame = p.CommandLine.IndexOf("-skin", StringComparison.OrdinalIgnoreCase) < 0;
+            return runningWithFrame == !s.LaunchFrameless;
+        }
+
         void CheckFrameless()
         {
             try
@@ -346,10 +371,12 @@ namespace AndroidTVDesktop.Core
                 }
 
                 // 4. Backdrop + monitor-sized placement, then measure where the picture is painted.
+                frameMode = IsFrameMode();
+                if (frameMode) Log.Info("TV frame mode: the emulator shows the AVD's device frame (bezel); fitting the whole TV inside the monitor (letterboxed) instead of overscanning.");
                 ShowBackdrop(mon);
                 RECT actual = Place(mon, "initial monitor-sized placement");
                 ForceForeground(Target);
-                await Task.Delay(700);
+                await Task.Delay(frameMode ? 1300 : 700);    // with a frame, Qt snaps the window back to the frame's aspect ratio (~0.5 s)
                 actual = Native.Rect(Target);
                 ContentModel model;
                 if (MeasurePainted(actual, mon, out var painted) && ContentModel.TryFrom(actual, painted, out model))
@@ -359,7 +386,26 @@ namespace AndroidTVDesktop.Core
                 // 5. Overscan so the painted picture covers the monitor; verify on screen.
                 double aspect = actual.Height > 0 ? actual.Width / (double)actual.Height : 16.0 / 9.0, scale = 1.0;
                 Coverage cov = null;
-                for (int attempt = 1; attempt <= 3; attempt++)
+                if (frameMode)
+                {
+                    // TV frame: fit the whole framed TV inside the monitor, centred; the black backdrop letterboxes it.
+                    for (int attempt = 1; attempt <= 2; attempt++)
+                    {
+                        RECT want = Geometry.FitInside(mon, model, aspect, 0, attempt == 1 ? 1.0 : 0.97);
+                        Place(want, "fit TV frame attempt " + attempt);
+                        await Task.Delay(1300);
+                        actual = Native.Rect(Target);
+                        if (!actual.Near(want, 6)) Log.Info($"Emulator adjusted the window: requested {want}, actual {actual}");
+                        var pic = model.Painted(actual);
+                        cov = new Coverage { PixelsOk = true };   // black bars around the TV are intended in frame mode
+                        HitTest(cov, mon);
+                        Log.Info($"Frame fit {attempt}: window={actual} TV incl. frame={pic} {cov}");
+                        if (cov.TaskbarAbove) { ForceForeground(Target); await Task.Delay(300); cov = new Coverage { PixelsOk = true }; HitTest(cov, mon); }
+                        if (mon.Contains(pic) || attempt == 2) break;
+                        if (actual.Height > 0) aspect = actual.Width / (double)actual.Height;
+                    }
+                }
+                for (int attempt = 1; attempt <= 3 && !frameMode; attempt++)
                 {
                     RECT want = Geometry.Overscan(mon, model, aspect, 2, scale);
                     Place(want, "overscan attempt " + attempt);
@@ -379,13 +425,14 @@ namespace AndroidTVDesktop.Core
                 placed = Native.Rect(Target);
                 clipReapplied = 0;
                 await Task.Delay(500);                       // Qt applies its own window mask after a resize ...
-                if (!EnsureClip(placed)) { await Task.Delay(300); EnsureClip(placed); }   // ... so our clip must be the final region
+                if (!frameMode && !EnsureClip(placed)) { await Task.Delay(300); EnsureClip(placed); }   // ... so our clip must be the final region
                 drifts.Clear();
                 ForceForeground(Target);
                 ConfineCursor();
                 if (s.ParkPointerOnEnter) Native.SetCursorPos(mon.Right - 2, mon.Bottom - 2);
                 LastCoverage = cov?.ToString() ?? "";
-                if (cov != null && cov.Ok) { enterFailures = 0; Log.Info($"FULLSCREEN VERIFIED on {Monitor.GdiName}: window={placed} covers monitor {mon}; {cov}"); }
+                if (cov != null && cov.Ok && frameMode) { enterFailures = 0; Log.Info($"FULLSCREEN VERIFIED (TV frame, letterboxed) on {Monitor.GdiName}: window={placed} inside monitor {mon}; {cov}"); }
+                else if (cov != null && cov.Ok) { enterFailures = 0; Log.Info($"FULLSCREEN VERIFIED on {Monitor.GdiName}: window={placed} covers monitor {mon}; {cov}"); }
                 else { enterFailures++; Log.Warn($"Fullscreen active but NOT fully verified ({cov}). The black backdrop still hides the desktop."); }
                 Machine.TryMove(TvState.Fullscreen, cov != null && cov.Ok ? "verified" : "unverified");
                 WriteState();
@@ -435,7 +482,7 @@ namespace AndroidTVDesktop.Core
             Log.Info($"SetWindowPos({what}, HWND_TOPMOST, {r}) returned {ok}" + (ok ? "" : $" error={err}"));
             KeepBackdropBelow();
             var actual = Native.Rect(Target);
-            ClipToMonitor(actual, Monitor.Bounds);
+            if (!frameMode) ClipToMonitor(actual, Monitor.Bounds);   // frame mode keeps the emulator's own (rounded) frame mask
             return actual;
         }
 
@@ -555,7 +602,7 @@ namespace AndroidTVDesktop.Core
                 placed = Native.Rect(Target);
                 cur = placed;
             }
-            EnsureClip(cur);
+            if (!frameMode) EnsureClip(cur);
             if (!s.ShowToolbarInTvMode)
                 foreach (var t in OwnedVisible(Target))
                 {

@@ -113,8 +113,7 @@ namespace AndroidTVDesktop
                 Ui.Toggle("Start in fullscreen", s.StartInFullscreen, v => st.Update(x => x.StartInFullscreen = v)),
                 Ui.Toggle("Borderless TV mode (cover the whole monitor, taskbar included)", s.BorderlessTvMode, v => st.Update(x => x.BorderlessTvMode = v)),
                 Ui.Toggle("Remember the emulator's normal window position", s.RememberWindowState, v => st.Update(x => x.RememberWindowState = v)),
-                Ui.Toggle("Start the emulator without the TV bezel (frameless, recommended)", s.LaunchFrameless, v => st.Update(x => x.LaunchFrameless = v),
-                          "Adds -skin <panel size> when this app starts the emulator. Applies to that launch only; AVD files are not modified.")));
+                BuildFrameToggle()));
 
             var guestStatus = new TextBlock { Foreground = Theme.B(Theme.SubText), Margin = new Thickness(0, 6, 0, 0) };
             var modes = (GuestResolution[])Enum.GetValues(typeof(GuestResolution));
@@ -265,6 +264,38 @@ namespace AndroidTVDesktop
             card.Unloaded += (o, e) => { if (st.Remote != null) st.Remote.Activity -= onActivity; };
             Fill();
             return card;
+        }
+
+        /// <summary>"Show the TV frame (bezel)" + a restart button when the running emulator does not match the setting yet.</summary>
+        UIElement BuildFrameToggle()
+        {
+            var e = st.Engine;
+            var panel = new StackPanel();
+            var note = new TextBlock { Foreground = Theme.B(Theme.Warn), Margin = new Thickness(52, 0, 0, 4) };
+            Button restart = null;
+            restart = Ui.Btn("Restart emulator to apply", async () =>
+            {
+                if (!Confirm("Restart the emulator now to apply the TV frame setting? Android shuts down normally (anything playing stops) and starts again.")) return;
+                await Busy(restart, () => e.RestartEmulatorAsync());
+                Fill();
+            });
+            restart.Margin = new Thickness(52, 0, 0, 10); restart.HorizontalAlignment = HorizontalAlignment.Left;
+            void Fill()
+            {
+                bool pending = !e.FrameSettingApplied();
+                note.Text = !e.Avd.ShowDeviceFrame && !st.Settings.LaunchFrameless
+                    ? "This AVD has no device frame (Android Studio > Device Manager > edit the device > 'Enable device frame'), so nothing changes."
+                    : pending ? "The emulator is running the other way - restart it to apply." : "";
+                note.Visibility = note.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+                restart.Visibility = pending ? Visibility.Visible : Visibility.Collapsed;
+            }
+            panel.Children.Add(Ui.Toggle("Show the TV frame (bezel) around the picture", !st.Settings.LaunchFrameless, v => { st.Update(x => x.LaunchFrameless = !v); Fill(); },
+                "On: the emulator starts with your AVD's own TV frame; fullscreen fits the whole framed TV on the screen with black around it. " +
+                "Off: no frame, and fullscreen fills the entire screen edge to edge. Takes effect when the emulator (re)starts; AVD files are never modified."));
+            panel.Children.Add(note);
+            panel.Children.Add(restart);
+            Fill();
+            return panel;
         }
 
         void RestoreDesktop()
