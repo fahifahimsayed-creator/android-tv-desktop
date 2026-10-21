@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-10-21
+
+- **Beginner setup guide** [docs/SETUP.md](docs/SETUP.md): from zero to Google TV. It covers installing Android Studio (winget or website), turning on hardware acceleration, creating the **Google TV 4K** emulator (Television (4K), Google TV API 36 x86_64), the first start and Google sign-in, installing the app, and fixes for common setup problems.
+- **Check-Setup.bat:** a read-only checker that lists what is ready and what is missing (Windows, RAM, disk, virtualization, Android Studio/SDK, emulator acceleration, Google TV image, TV emulators, the app, Edge). It finds Android Studio in any install folder.
+- **README:** 6-step Quick start.
+- **App:** automatically picks the PC's own TV emulator when the default name doesn't exist. Release binaries contain no build-machine paths.
+
 ## 1.0.0 — 2026-10-20
 
 First release of **Android TV Desktop**, a WPF desktop app that replaces the script launchers.

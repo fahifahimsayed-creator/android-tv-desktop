@@ -46,42 +46,40 @@ the keyboard, the mouse, or your **phone as a remote**.
   - No admin rights, no registry changes, no telemetry.
 - **Diagnostics:** log with rotation, a troubleshooting page, network/ADB checks, and a diagnostics export.
 
-## Requirements
+## Quick start (new PC, from zero)
 
-| | |
-|---|---|
-| Windows | Windows 10 or 11, 64-bit (.NET Framework 4.8 is built in) |
-| Android Studio | With the Android Emulator and SDK Platform-Tools (ADB) installed |
-| An Android TV AVD | Created in Android Studio (see below). A **Google TV** image with Play Store is recommended |
-| RAM | 8 GB minimum (the emulator itself uses 2–4 GB). Close other heavy apps if the emulator stalls |
-| Optional | Microsoft Edge (for Netflix (PC)) |
+> **New to Android Studio?** Follow the illustrated step-by-step guide: **[docs/SETUP.md](docs/SETUP.md)**.
+> It takes about 30–60 minutes, mostly downloads, and you only do it once.
 
-### Create the TV emulator (one time)
+| # | Step | How |
+|---|---|---|
+| 1 | **Install Android Studio** (free, from Google; includes the Android Emulator) | `winget install -e --id Google.AndroidStudio`, or download from [developer.android.com/studio](https://developer.android.com/studio). Open it once and finish the **Standard** Setup Wizard |
+| 2 | **Turn on hardware acceleration** | Start → *Turn Windows features on or off* → tick **Windows Hypervisor Platform** → restart. Make sure CPU virtualization (VT-x / AMD-V) is enabled in the BIOS |
+| 3 | **Create the Google TV 4K emulator** | Android Studio → **Device Manager** → **+** → **TV** → **Television (4K)** → system image **Google TV, API 36, x86_64** (download) → **Finish** |
+| 4 | **First start + sign in** | Click ▶, complete the Google TV setup and sign in with your Google account (needed for the Play Store), then close it |
+| 5 | **Install Android TV Desktop** | Download the zip from **[Releases](../../releases/latest)**, extract it, run **`install.bat`** |
+| 6 | **Check & go** | Double-click **`Check-Setup.bat`**: every line should say **[OK]**. Then open **Android TV Desktop** → **Launch TV** |
 
-1. Android Studio → **Device Manager** → **Create Virtual Device**.
-2. Category **TV** → choose a TV device (e.g. *Television (1080p)* or *Television (4K)*).
-3. Pick a **Google TV** or **Android TV** system image and download it.
-4. Finish, and start it once from Android Studio to make sure it boots. Sign in to your Google account on
-   the TV if you want the Play Store.
+**Requirements:**
+- Windows 10/11 64-bit.
+- **8 GB RAM** or more (16 GB is smoother).
+- About **20 GB** free disk space.
+- An Intel/AMD CPU with virtualization.
+- A Google account.
+- Optional: Microsoft Edge, for Netflix (PC).
 
-Android TV Desktop finds the SDK automatically (`ANDROID_SDK_ROOT`, `ANDROID_HOME` or
-`%LOCALAPPDATA%\Android\Sdk`). It also picks your TV AVD automatically; you can change it on the
-**System** page.
+`Check-Setup.bat` is **read-only**. It checks Windows, RAM, disk space, virtualization, Android Studio/SDK,
+the emulator and acceleration, the Google TV image, TV emulators, the app and Edge. It then tells you exactly
+what is still missing, in order.
 
-## Install
+The app finds the Android SDK automatically (`ANDROID_SDK_ROOT`, `ANDROID_HOME` or
+`%LOCALAPPDATA%\Android\Sdk`) and picks your TV emulator automatically. You can change both on the **System** page.
 
-1. Download the latest **`AndroidTVDesktop-x.y.z.zip`** from
-   [Releases](../../releases) and extract it.
-2. Run **`install.bat`**. It installs for your user only, into `%LOCALAPPDATA%\Programs\Android TV Desktop`,
-   and adds Desktop and Start Menu shortcuts.
-3. Start **Android TV Desktop** and press **Launch TV**.
+Windows SmartScreen may warn about an unsigned app from the internet: choose *More info → Run anyway*, or
+build it yourself (below).
 
-Windows SmartScreen may warn about an unsigned app from the internet: choose *More info → Run anyway*,
-or build it yourself (below).
-
-Uninstall from the Start Menu (*Uninstall Android TV Desktop*). It removes only what the installer created;
-your emulator and AVD are never touched.
-
+**Uninstall:** Start Menu → *Uninstall Android TV Desktop*. It removes only what the installer created; your
+emulator and AVD are never touched.
 ## Using it
 
 | | |

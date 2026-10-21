@@ -16,7 +16,7 @@ New-Item -ItemType Directory -Path $pkg -Force | Out-Null
 $files = @(
     @{ From = "$bin\AndroidTVDesktop.exe" }, @{ From = "$bin\AndroidTVDesktop.Core.dll" },
     @{ From = "$root\src\App\Assets\AndroidTVDesktop.ico" },
-    @{ From = "$root\Restore-Desktop.ps1" }, @{ From = "$root\Restore-Desktop.bat" },
+    @{ From = "$root\Restore-Desktop.ps1" }, @{ From = "$root\Restore-Desktop.bat" }, @{ From = "$root\Check-Setup.ps1" }, @{ From = "$root\Check-Setup.bat" }, @{ From = "$root\docs\SETUP.md" },
     @{ From = "$root\installer\install.ps1" }, @{ From = "$root\installer\install.bat" },
     @{ From = "$root\installer\uninstall.ps1" }, @{ From = "$root\installer\uninstall.bat" },
     @{ From = "$root\README.md" }, @{ From = "$root\CHANGELOG.md" }, @{ From = "$root\VERSION" }
