@@ -1,0 +1,25 @@
+# Build output (releases are published as GitHub Releases)
+build/
+dist/
+
+# Local backups of the old script launchers (contain machine-specific paths and logs)
+backup-*/
+
+# Test results, screenshots and diagnostics (may show personal screens/accounts)
+tests/results/
+tests/gui/results/
+Tests/results/
+Tests/gui/results/
+*diagnostics*.zip
+
+# Logs and editor files
+*.log
+*.rsp
+*.tmp
+.vs/
+*.suo
+*.user
+Thumbs.db
+
+# Live GUI harness (synthetic keystrokes): antivirus flags it, so it stays out of the public repo
+tests/gui/Run-GuiTests.ps1
